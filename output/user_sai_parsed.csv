@@ -1239,3 +1239,6 @@ date,description,debit,credit
 2024-08-09,   TO TRANSFER-UPI/DR/************/MADHU V/KARB/nvmadhu9-2/UPI--,1700, 
 2024-08-10,   by debit card-OTHPOS******      METRO BRANDS LIMITED  Bangalore--,6995, 
 2024-08-10,   TO TRANSFER-UPI/DR/************/SHYLAJA /CNRB/**********/UPI--,2500, 
+2024-03-01,POS ****** Swiggy Bangalore,250.00,
+2024-03-02,Salary from ACME Corp,,75000.00
+2024-03-03,NEFT to LIC Premium,1500.00,

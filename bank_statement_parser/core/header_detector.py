@@ -116,18 +116,22 @@ class HeaderDetector:
         Returns:
             int or None: Index of the best header row.
         """
+
+        # Try to find the first valid transaction row
         first_transaction_index = TransactionValidator.find_first_transaction_row(df)
-        if first_transaction_index is None:
-            logger.warning("Could not find a valid transaction row to anchor header search.")
-            return None
 
-        # Bottom-up strategy
-        bottom_up_header_index = HeaderDetector.detect_header_above_row(df, first_transaction_index)
-        bottom_up_values = df.iloc[bottom_up_header_index].astype(str).str.lower().tolist()
-        bottom_up_values = [val for val in bottom_up_values if val.strip()]
-        bottom_up_score = HeaderDetector.score_header_row(bottom_up_values)
+        bottom_up_score = -1
+        bottom_up_header_index = None
 
-        # Top-down strategy
+        if first_transaction_index is not None:
+            bottom_up_header_index = HeaderDetector.detect_header_above_row(df, first_transaction_index)
+            bottom_up_values = df.iloc[bottom_up_header_index].astype(str).str.lower().tolist()
+            bottom_up_values = [val for val in bottom_up_values if val.strip()]
+            bottom_up_score = HeaderDetector.score_header_row(bottom_up_values)
+            logger.debug(
+                f"Bottom-up candidate row {bottom_up_header_index}: {df.iloc[bottom_up_header_index].tolist()} with score {bottom_up_score:.2f}")
+
+        # Always run top-down strategy
         best_top_score = -1
         best_top_index = None
         for i in range(min(scan_top_n, len(df))):
@@ -139,12 +143,14 @@ class HeaderDetector:
                 best_top_score = score
                 best_top_index = i
 
-        logger.debug(f"Bottom-up candidate row {bottom_up_header_index}: {df.iloc[bottom_up_header_index].tolist()} with score {bottom_up_score:.2f}")
-        logger.debug(f"Top-down candidate row {best_top_index}: {df.iloc[best_top_index].tolist()} with score {best_top_score:.2f}")
+        logger.debug(
+            f"Top-down candidate row {best_top_index}: {df.iloc[best_top_index].tolist()} with score {best_top_score:.2f}")
 
-        if best_top_score > bottom_up_score:
-            logger.info(f"Selected Top-down header")
-            return best_top_index
-        else:
-            logger.info(f"Selected Bottom-up header")
+        # If both are available, choose the better
+        if bottom_up_header_index is not None and bottom_up_score >= best_top_score:
+            logger.info("Selected Bottom-up header")
             return bottom_up_header_index
+        else:
+            logger.info("Selected Top-down header")
+            return best_top_index
+

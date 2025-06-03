@@ -3,8 +3,9 @@ import pandas as pd
 import datetime
 import re
 
-from bank_statement_parser.config.constants import NULL_VALUES, GENERIC_LABELS
+from bank_statement_parser.config.constants import NULL_VALUES, GENERIC_LABELS, StandardHeader
 from bank_statement_parser.config.patterns import GENERIC_PATTERNS, bank_abbreviations, noise_patterns
+from bank_statement_parser.utils.logger import logger
 
 
 class TransactionValidator:
@@ -94,3 +95,39 @@ class TransactionValidator:
 
         # Ensure they are not overlapping values
         return len({str(date_val), str(amount_val), str(desc_val)}) == 3
+
+    @classmethod
+    def validate_and_extract_transactions(cls, data_df: pd.DataFrame, actual_to_standard: dict,
+                                          file_name: str) -> pd.DataFrame | None:
+        """Validates individual transaction rows and extracts valid ones."""
+        try:
+            date_col = [col for col, std in actual_to_standard.items() if std == StandardHeader.DATE.value][0]
+            desc_col = [col for col, std in actual_to_standard.items() if std == StandardHeader.DESCRIPTION.value][0]
+            credit_col = [col for col, std in actual_to_standard.items() if std == StandardHeader.CREDIT.value][0]
+            debit_col = [col for col, std in actual_to_standard.items() if std == StandardHeader.DEBIT.value][0]
+        except IndexError:
+            logger.error(f"Missing essential columns for validation in {file_name}.")
+            return None
+
+        valid_rows_list = []
+        for _, row in data_df.iterrows():
+            date_val = row[date_col]
+            desc_val = row[desc_col]
+            credit_val = row[credit_col]
+            debit_val = row[debit_col]
+
+            # Validate individual fields. If any primary validation fails, skip or break.
+            # Using 'and' for all checks means all must pass for a row to be considered valid
+            if (TransactionValidator.is_valid_date(date_val) and
+                    TransactionValidator.is_valid_description(desc_val) and
+                    (TransactionValidator.is_valid_amount(credit_val) or TransactionValidator.is_valid_amount(
+                        debit_val))):
+                valid_rows_list.append(row)
+            else:
+                logger.debug(
+                    f"Skipping invalid row in {file_name}: Date: {date_val}, Desc: {desc_val}, Credit: {credit_val}, Debit: {debit_val}")
+
+        if not valid_rows_list:
+            return None
+
+        return pd.DataFrame(valid_rows_list, columns=data_df.columns)

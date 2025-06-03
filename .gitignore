@@ -1,2 +1,4 @@
 .venv
 bank_statements/*
+!bank_statements/sample_format.csv
+.idea
