@@ -1,21 +1,3 @@
-# 🧾 Bank Statement Parser
-
-A privacy-first Python tool to parse and standardize bank statements (Excel/CSV), extract clean transaction data, and export user-specific outputs.  
-Ideal for collaborative dataset building without sharing personal financial files.
-
----
-
-## 🚀 Features
-
-- Parses various bank statement formats
-- Automatically detects headers like Date, Description, Credit, Debit
-- Saves user-specific parsed output
-- GUI input prompt when run via IDE
-- CLI support for automated workflows
-- Skips pushing sensitive raw files — only output is shared
-
----
-
 ## 🔧 How to Use
 
 ### ▶️ Option 1: Run via Terminal (CLI)
@@ -48,54 +30,13 @@ If you run `main.py` without CLI arguments:
 
 ---
 
-## 📁 Folder Structure
-
-```
-project_root/
-│
-├── bank_statement_parser/      # Core logic
-│   ├── core/                   # Parser modules
-│   └── __init__.py
-│
-├── main.py                     # Entry point
-├── output/                     # [Ignored] Parsed user outputs
-├── bank_statements/            # [Ignored] Raw input files
-├── requirements.txt
-└── README.md
-```
-
----
-
-## 🔒 Privacy & Collaboration
-
-- ❌ Do **not** upload your real bank statements.
-- ✅ Instead, run `main.py` and commit only your parsed output:
-  ```
-  output/user_<your_name>_parsed.csv
-  ```
-
-This way, everyone contributes clean, structured data without leaking private financial information.
-
----
-
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/yourusername/bank-statement-parser.git
-cd bank-statement-parser
+git clone git@github.com:deekshith39/PET-AI.git
+cd bank_statement_parser
 pip install -r requirements.txt
 ```
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! To help:
-- Create a fake/example bank statement (mimicking real format)
-- Add it under a `sample_data/` folder
-- Open a PR to enhance parsing logic or support new banks
-
----
 
 ## 🧠 Future Plans
 
@@ -105,7 +46,3 @@ We welcome contributions! To help:
 - Dashboard to visualize expenses
 
 ---
-
-## 📄 License
-
-MIT License © 2025 [Your Name]
