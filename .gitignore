@@ -1,4 +1,5 @@
 .venv
 bank_statements/*
 !bank_statements/sample_format.csv
+!output/user_sai_parsed.csv
 .idea
