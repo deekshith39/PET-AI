@@ -4,7 +4,7 @@ import pandas as pd
 from bank_statement_parser.config.constants import StandardHeader
 from bank_statement_parser.core.file_loader import robust_load
 from bank_statement_parser.core.header_detector import HeaderDetector
-from bank_statement_parser.utils.common_utils import get_standard_header_keys
+from bank_statement_parser.utils.common_utils import get_standard_header_keys, sanitize_numeric_column
 from bank_statement_parser.utils.logger import logger
 from bank_statement_parser.core.transaction_validator import TransactionValidator
 from bank_statement_parser.utils.transforms import mask_all_digits, normalize_date
@@ -89,7 +89,40 @@ class BankStatementParser:
             return None
 
         normalized_df = self.normalize_transactions(valid_transactions_df, actual_to_standard)
-        logger.info(f"Processed {file_name}: {len(normalized_df)} valid rows")
+        final_df = self.generate_net_amount_coulmn(normalized_df)
+
+        logger.info(f"Processed {file_name}: {len(final_df)} valid rows")
+        return final_df
+
+    def generate_net_amount_coulmn(self, normalized_df) -> pd.DataFrame:
+        """
+        Calculates the net amount for each transaction by subtracting the debit value from the credit value.
+        Ensures that credit and debit columns are properly converted to floats, handling missing or invalid values.
+
+        Args:
+            normalized_df (pd.DataFrame): DataFrame containing at least CREDIT and DEBIT columns.
+
+        Returns:
+            pd.DataFrame: The input DataFrame with an additional AMOUNT column representing net amount.
+        """
+        normalized_df[StandardHeader.CREDIT.value] = (
+            normalized_df[StandardHeader.CREDIT.value]
+            .infer_objects(copy=False)
+            .replace(['', ' ', None], pd.NA)
+            .fillna(0)
+            .astype(float)
+        )
+        normalized_df[StandardHeader.DEBIT.value] = (
+            normalized_df[StandardHeader.DEBIT.value]
+            .infer_objects(copy=False)
+            .replace(['', ' ', None], pd.NA)
+            .fillna(0)
+            .astype(float)
+        )
+        normalized_df[StandardHeader.AMOUNT.value] = (
+                normalized_df[StandardHeader.CREDIT.value] -
+                normalized_df[StandardHeader.DEBIT.value]
+        )
         return normalized_df
 
     def normalize_transactions(self, df_to_normalize: pd.DataFrame, actual_to_standard: dict) -> pd.DataFrame:

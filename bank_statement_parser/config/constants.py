@@ -6,6 +6,7 @@ class StandardHeader(Enum):
     DESCRIPTION = "description"
     DEBIT = "debit"
     CREDIT = "credit"
+    AMOUNT = "net_amount"
 
 expected_headers = {
     StandardHeader.DATE: [
